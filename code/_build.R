@@ -13,6 +13,6 @@ source("code/0-setup.R")
 
 # Call individual code files ----------------------------------------------
 
-# source("code/1-example.R")
+source("code/1-physician-compare.R")
 
 message("Build complete.")
