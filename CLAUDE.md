@@ -45,6 +45,6 @@ Raw data is symlinked from `research-data/Physician Compare/` into `data/input/`
 ## Last Session
 
 - **Date**: 2026-02-16
-- Scaffolded repo via `/kickoff-data`, ported `6-physician-compare.R` from hc-atlas as `1-physician-compare.R` (removed crosswalk validation section)
-- Created data symlink to `research-data/Physician Compare/`
-- Pipeline is ready to run but has not been executed yet
+- Ran pipeline successfully: 32M rows, 1.7M physicians, 9.7K hospitals (23 quarterly files)
+- Fixed `0-setup.R` groundhog startup noise (`options(repos=...)`, `quietly`, `suppressWarnings`)
+- Updated hc-atlas README to cross-reference this repo
