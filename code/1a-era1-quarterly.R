@@ -1,23 +1,14 @@
 # Meta --------------------------------------------------------------------
 
-## Title:         Physician Compare Processing
+## Title:         Era 1 — Quarterly CSVs (2013-2018)
 ## Author:        Ian McCarthy
-## Date Created:  2026-02-16
-## Description:   Process Physician Compare quarterly demographics (2013-2018).
-##                Extracts physician NPI + hospital affiliation CCNs and reshapes
-##                to a long physician-hospital panel.
+## Date Created:  2026-02-28
+## Description:   Read Physician Compare quarterly CSV files for 2013-2018.
+##                Handles 5 schema variants across years. Pivots wide hospital
+##                affiliation columns to long format and writes intermediate CSV.
 ##
 ## Inputs:        data/input/Physician Compare/Demographics/YYYY/YYYY_QN.csv
-##
-## Outputs:       data/output/physician-hospital-affiliations.csv
-##
-## Schema variants:
-##   2013:      verbose names, 10 CCN slots ("Claims based hospital affiliation CCN N")
-##   2014 Q1:   no header row, 40 cols, verbose layout without DBA name
-##   2014 Q2+:  has header, verbose, 5 CCN slots, may have DBA
-##   2015-2016: verbose, 5 CCN slots, has DBA
-##   2017:      verbose but "Hospital affiliation CCN N" (not "Claims based")
-##   2018:      short names (hosp_afl_N), leading spaces in some column names
+## Outputs:       data/output/era1-affiliations.csv
 
 
 # Helper: read one Physician Compare file ----------------------------------
@@ -91,9 +82,9 @@ read_pc_file <- function(filepath, yr, qtr) {
 }
 
 
-# Load all quarterly files -------------------------------------------------
+# Load 2013-2018 quarterly files ------------------------------------------
 
-message("Loading Physician Compare quarterly demographics...")
+message("\n--- Era 1: 2013-2018 (quarterly CSVs) ---")
 
 pc_dir <- "data/input/Physician Compare/Demographics"
 all_quarters <- list()
@@ -120,18 +111,16 @@ for (yr in 2013:2018) {
   }
 }
 
-message(sprintf("  Loaded %d quarterly files", length(all_quarters)))
+message(sprintf("  Era 1: loaded %d quarterly files", length(all_quarters)))
 
 
-# Stack and reshape to long ------------------------------------------------
-
-message("\nReshaping wide-to-long...")
+# Pivot wide to long and export -------------------------------------------
 
 pc_wide <- bind_rows(all_quarters)
-message(sprintf("  %s physician-quarter rows", format(nrow(pc_wide), big.mark = ",")))
+message(sprintf("  %s physician-quarter rows (wide)",
+                format(nrow(pc_wide), big.mark = ",")))
 
-## Pivot CCN and LBN columns to long simultaneously (avoids many-to-many join)
-pc_long <- pc_wide %>%
+era1 <- pc_wide %>%
   pivot_longer(
     cols = matches("^hosp_(ccn|name)_\\d+$"),
     names_to = c(".value", "slot"),
@@ -139,58 +128,18 @@ pc_long <- pc_wide %>%
   ) %>%
   rename(hosp_ccn = ccn, hosp_name = name) %>%
   select(-slot) %>%
-  filter(!is.na(hosp_ccn), hosp_ccn != "")
-
-message(sprintf("  %s physician-hospital-quarter rows",
-                format(nrow(pc_long), big.mark = ",")))
-
-
-# Deduplicate --------------------------------------------------------------
-
-pc_dedup <- pc_long %>%
+  filter(!is.na(hosp_ccn), hosp_ccn != "") %>%
   distinct(npi, hosp_ccn, year, quarter, .keep_all = TRUE)
 
-message(sprintf("  %s rows after deduplication",
-                format(nrow(pc_dedup), big.mark = ",")))
+message(sprintf("  %s physician-hospital rows after pivot + dedup",
+                format(nrow(era1), big.mark = ",")))
 
-
-# Export -------------------------------------------------------------------
-
-write_csv(pc_dedup, "data/output/physician-hospital-affiliations.csv")
-
-
-# Diagnostics --------------------------------------------------------------
-
-message("\n=== Physician Compare Diagnostics ===")
-message(sprintf("Total affiliation rows:    %s",
-                format(nrow(pc_dedup), big.mark = ",")))
-message(sprintf("Distinct physician NPIs:   %s",
-                format(n_distinct(pc_dedup$npi), big.mark = ",")))
-message(sprintf("Distinct hospital CCNs:    %s",
-                format(n_distinct(pc_dedup$hosp_ccn), big.mark = ",")))
+write_csv(era1, "data/output/era1-affiliations.csv")
+message("  Wrote data/output/era1-affiliations.csv")
 
 ## Year-quarter breakdown
-yq <- pc_long %>% count(year, quarter) %>% arrange(year, quarter)
-message("\nRows by year-quarter:")
+yq <- era1 %>% count(year, quarter) %>% arrange(year, quarter)
 for (r in seq_len(nrow(yq))) {
-  message(sprintf("  %d %s: %s", yq$year[r], yq$quarter[r],
+  message(sprintf("    %d %s: %s rows", yq$year[r], yq$quarter[r],
                   format(yq$n[r], big.mark = ",")))
 }
-
-## Affiliations per physician
-message("\nAffiliations per physician (across all year-quarters):")
-aff_per_doc <- pc_dedup %>% count(npi) %>% pull(n) %>% summary()
-for (nm in names(aff_per_doc)) {
-  message(sprintf("  %-10s %.1f", nm, aff_per_doc[nm]))
-}
-
-## Top specialties
-message("\nTop 10 specialties:")
-spec_diag <- pc_dedup %>% count(specialty, sort = TRUE) %>% head(10)
-for (r in seq_len(nrow(spec_diag))) {
-  message(sprintf("  %-40s %s", spec_diag$specialty[r],
-                  format(spec_diag$n[r], big.mark = ",")))
-}
-
-message("\nPhysician Compare processing complete.")
-message("  Output: data/output/physician-hospital-affiliations.csv")
