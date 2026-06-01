@@ -7,7 +7,7 @@
 ##                Handles 5 schema variants across years. Pivots wide hospital
 ##                affiliation columns to long format and writes intermediate CSV.
 ##
-## Inputs:        data/input/Physician Compare/Demographics/YYYY/YYYY_QN.csv
+## Inputs:        data/input/physicians/Demographics/YYYY/YYYY_QN.csv
 ## Outputs:       data/output/era1-affiliations.csv
 
 
@@ -86,7 +86,7 @@ read_pc_file <- function(filepath, yr, qtr) {
 
 message("\n--- Era 1: 2013-2018 (quarterly CSVs) ---")
 
-pc_dir <- "data/input/Physician Compare/Demographics"
+pc_dir <- "data/input/physicians/Demographics"
 all_quarters <- list()
 
 for (yr in 2013:2018) {

@@ -9,7 +9,7 @@
 ##                2021-2022 standard naming. Pivots wide→long and writes
 ##                intermediate CSV.
 ##
-## Inputs:        data/input/Physician Compare/*.zip (2019-2022 archives)
+## Inputs:        data/input/physicians/*.zip (2019-2022 archives)
 ## Outputs:       data/output/era2-affiliations.csv
 
 
@@ -100,7 +100,7 @@ quarter_map <- list(
 
 message("\n--- Era 2: 2019-2022 (archived zips, wide format) ---")
 
-zip_dir <- "data/input/Physician Compare"
+zip_dir <- "data/input/physicians"
 tmp_dir <- "scratch/tmp"
 dir.create(tmp_dir, recursive = TRUE, showWarnings = FALSE)
 

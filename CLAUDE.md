@@ -7,8 +7,8 @@ Data processing repo for CMS Physician Compare public data. Extracts and cleans 
 ## Data Sources
 
 - **Physician Compare / CMS Archived Snapshots**: CMS physician demographics, group practice affiliations, and hospital affiliations (2013--2026)
-  - Source: `research-data/Physician Compare/`
-  - Symlink: `data/input/Physician Compare`
+  - Source: `research-data/care-compare/physicians/` (formerly `research-data/Physician Compare/`, merged Mar 2026)
+  - Symlink: `data/input/physicians` (updated from `data/input/Physician Compare`)
   - Era 1 (2013--2018): quarterly CSVs in `Demographics/YYYY/YYYY_QN.csv`, wide `hosp_afl_N` columns
   - Era 2 (2019--2022): archived zips with DAC CSVs containing wide `hosp_afl_N` columns
   - Era 3 (2023--2026): archived zips with `Facility_Affiliation.csv` (already long-format)
@@ -49,13 +49,12 @@ Each era script is self-contained (no shared helpers). `read_pc_file()` is dupli
 
 ## Data Symlinks
 
-Raw data is symlinked from `research-data/Physician Compare/` into `data/input/`. The batch script `scratch/make_symlinks.bat` recreates the symlink on a fresh clone.
+Raw data is symlinked from `research-data/care-compare/physicians/` into `data/input/physicians`. The batch script `scratch/make_symlinks.bat` recreates the symlink on a fresh clone.
+
 
 ## Last Session
 
-- **Date**: 2026-02-28
-- Refactored monolithic `1-physician-compare.R` (444 lines) into era-based scripts: `1a`, `1b`, `1c`, `2-combine.R`.
-- Migrated from groundhog to renv for package management.
-- Quarter sampling: one month per quarter per year (see `quarter_map` in each era script).
-- 2022 Nov--Dec is a gap (DAC dropped hosp_afl, Facility_Affiliation not yet introduced). Q4 2022 uses October.
-- `hosp_name` is NA for 2023+ (not in Facility_Affiliation; can be looked up from hc-atlas if needed).
+- **Date**: 2026-03-01
+- Refactored monolithic `1-physician-compare.R` into 4 era-based scripts (`1a`, `1b`, `1c`, `2-combine.R`). Migrated from groundhog to renv.
+- Full pipeline verified: 65.9M rows, 2.2M physicians, 10.2K hospitals, 2013 Q2 through 2026 Q1.
+- 2024 Q3/Q4 have identical row counts (1,340,878) — CMS zips are identical for months 9--12 that year.

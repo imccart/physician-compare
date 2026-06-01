@@ -9,7 +9,7 @@
 ##                Handles column name changes mid-2023 and 2024's flat zip
 ##                structure.
 ##
-## Inputs:        data/input/Physician Compare/*.zip (2023-2026 archives)
+## Inputs:        data/input/physicians/*.zip (2023-2026 archives)
 ## Outputs:       data/output/era3-affiliations.csv
 
 
@@ -37,7 +37,7 @@ quarter_map <- list(
 
 message("\n--- Era 3: 2023-2026 (Facility_Affiliation.csv) ---")
 
-zip_dir <- "data/input/Physician Compare"
+zip_dir <- "data/input/physicians"
 tmp_dir <- "scratch/tmp"
 dir.create(tmp_dir, recursive = TRUE, showWarnings = FALSE)
 
